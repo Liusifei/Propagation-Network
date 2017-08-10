@@ -23,19 +23,26 @@ rois = np.array([[1,10,10,137,137],[1,17,27,144,154],[2,16,40,143,167],[2,40,26,
 
 # load net
 net = caffe.Net(solverproto, caffe.TRAIN)
+print 'finish init ...'
 # shape for input (data blob is N x C x H x W), set data
 # print in_.shape, prior.shape
 net.blobs['image'].reshape(*in_.shape)
 net.blobs['image'].data[...] = in_
+print 'finish putting image data ...'
 net.blobs['data_roi'].reshape(*rois.shape)
 net.blobs['data_roi'].data[...] = rois
+print 'finish putting roi data ...'
 
 
 # run net and take argmax for prediction
 net.forward()
+print 'finish forward ...'
+
 samples = net.blobs['samples'].data[...]
 errors = 1-samples
 net.blobs['samples'].diff[...] = errors
 net.backward()
+print 'finish backward ...'
+
 diffs = net.blobs['image'].diff[...]
 scipy.io.savemat('samples.mat', dict(samples = samples, diffs = diffs))

@@ -6,6 +6,7 @@
 
 #include <cfloat>
 
+#include <stdio.h>
 #include "caffe/layers/roi_layer.hpp"
 
 using std::max;
@@ -14,7 +15,7 @@ using std::min;
 namespace caffe {
 
 template <typename Dtype>
-__global__ void ROIForward(const int nthreads, const Dtype* bottom_data,
+__global__ void ROIForward(const int nthreads, const int bottom_count, const Dtype* bottom_data,
     const int channels, const int height,
     const int width, const int pooled_height, const int pooled_width,
     const Dtype* bottom_rois, Dtype* top_data, int* argmax_data) {
@@ -26,9 +27,9 @@ __global__ void ROIForward(const int nthreads, const Dtype* bottom_data,
     int n = index / pooled_width / pooled_height / channels;
 
     bottom_rois += n * 5;
-    int roi_batch_ind = bottom_rois[0];
-    int roi_start_w = bottom_rois[1];
-    int roi_start_h = bottom_rois[2];
+    int roi_batch_ind = bottom_rois[0]-1;
+    int roi_start_w = bottom_rois[1]-1;
+    int roi_start_h = bottom_rois[2]-1;
     // int roi_end_w = bottom_rois[3];
     // int roi_end_h = bottom_rois[4];
     // Force malformed ROIs to be 1x1
@@ -38,6 +39,10 @@ __global__ void ROIForward(const int nthreads, const Dtype* bottom_data,
     // CHECK(roi_height == pooled_height) << "roi height should be the same with the pre defined height.";
 
     int bottom_index = roi_batch_ind * channels * height * width + c * height * width + (roi_start_h + ph) * width + (roi_start_w + pw);
+    // LOG_IF(INFO, bottom_index >= bottom_count) << "roi_batch_ind: " << roi_batch_ind << " c: " << c << " H: " << (roi_start_h + ph) << " W: " << (roi_start_w + pw);
+    // if (bottom_index >= bottom_count) {
+    //   printf("%d, %d, %d, %d\n", roi_batch_ind, c, (roi_start_h + ph), (roi_start_w + pw));
+    // }
 
     top_data[index] = bottom_data[bottom_index];
     argmax_data[bottom_index] = 1;
@@ -54,10 +59,12 @@ void ROILayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   int* argmax_data = mask_.mutable_gpu_data();
   int count = top[0]->count();
   int bottom_count = bottom[0]->count();
+  // LOG(INFO) << "bottom_count: " << bottom_count << " argmax_data_count: " << mask_.count();
   caffe_gpu_set(bottom_count, 0, argmax_data);
   // NOLINT_NEXT_LINE(whitespace/operators)
+  // LOG(INFO) << "bottom_count: " << bottom_count;
   ROIForward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
-      count, bottom_data, channels_, height_, width_,
+      count, bottom_count, bottom_data, channels_, height_, width_,
       pooled_height_, pooled_width_, bottom_rois, top_data, argmax_data);
   CUDA_POST_KERNEL_CHECK;
 }
@@ -77,13 +84,13 @@ __global__ void ROIBackward(const int nthreads, const Dtype* top_diff,
 
 
     bottom_rois += n * 5;
-    int roi_batch_ind = bottom_rois[0];
-    int roi_start_w = bottom_rois[1];
-    int roi_start_h = bottom_rois[2];
+    int roi_batch_ind = bottom_rois[0]-1;
+    int roi_start_w = bottom_rois[1]-1;
+    int roi_start_h = bottom_rois[2]-1;
 
     int bottom_index = roi_batch_ind * channels * height * width + c * height * width + (roi_start_h + ph) * width + (roi_start_w + pw);
     if (argmax_data[bottom_index] != 0) {
-      bottom_diff[bottom_index] = top_diff[index];
+      bottom_diff[bottom_index] += top_diff[index];
     }
   }
 }
