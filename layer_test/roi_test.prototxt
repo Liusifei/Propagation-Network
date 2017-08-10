@@ -1,0 +1,26 @@
+name: "test_roi"
+force_backward: 1
+layer {
+  name: "image"
+  type: "Input"
+  top: "image"
+  input_param { shape: { dim: 2 dim: 3 dim: 512 dim: 512 } }
+}
+layer {
+  name: "data_roi"
+  type: "Input"
+  top: "data_roi"
+  input_param { shape: { dim: 4 dim: 5 } }
+}
+layer {
+	name: "roi_test"
+	type: "ROI"
+	bottom: "image"
+	bottom: "data_roi"
+	top: "samples"
+	roi_param {
+		pooled_h: 128
+		pooled_w: 128
+	}
+	loss_weight: 1
+}
