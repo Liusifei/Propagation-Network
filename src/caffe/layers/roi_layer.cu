@@ -30,16 +30,9 @@ __global__ void ROIForward(const int nthreads, const int bottom_count, const Dty
     int roi_batch_ind = bottom_rois[0]-1;
     int roi_start_w = bottom_rois[1]-1;
     int roi_start_h = bottom_rois[2]-1;
-    // int roi_end_w = bottom_rois[3];
-    // int roi_end_h = bottom_rois[4];
-    // Force malformed ROIs to be 1x1
-    // int roi_width = max(roi_end_w - roi_start_w + 1, 1);
-    // int roi_height = max(roi_end_h - roi_start_h + 1, 1);
-    // CHECK(roi_width == pooled_width) << "roi width should be the same with the pre defined width.";
-    // CHECK(roi_height == pooled_height) << "roi height should be the same with the pre defined height.";
 
     int bottom_index = roi_batch_ind * channels * height * width + c * height * width + (roi_start_h + ph) * width + (roi_start_w + pw);
-    // LOG_IF(INFO, bottom_index >= bottom_count) << "roi_batch_ind: " << roi_batch_ind << " c: " << c << " H: " << (roi_start_h + ph) << " W: " << (roi_start_w + pw);
+    // DEBUG
     // if (bottom_index >= bottom_count) {
     //   printf("%d, %d, %d, %d\n", roi_batch_ind, c, (roi_start_h + ph), (roi_start_w + pw));
     // }
