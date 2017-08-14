@@ -36,7 +36,7 @@ def load_imagelabel_ac(voc_dir, idx, shape, mean_):
 	return image, label
 
 
-def getrois(label, roi_num, roi_dim):
+def getrois(id_, label, roi_num, roi_dim):
 	# image: h*w*k
 	# images: h*w*k*n
 	# sample according to the pretrained model
@@ -58,6 +58,6 @@ def getrois(label, roi_num, roi_dim):
 			protect += 1
 			continue
 		protect = 0
-		rois[count] = np.array((left,top,roi_dim[0],roi_dim[1]))
+		rois[count] = np.array((id_, left,top,roi_dim[0],roi_dim[1]))
 		count += 1
 	return rois
