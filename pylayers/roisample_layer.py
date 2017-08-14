@@ -5,6 +5,7 @@ from PIL import Image
 import scipy.io
 import random
 import sys
+sys.path.append("..")
 from pyutils import data_roidb as db_roi
 # from multiprocessing import Process, Queue
 

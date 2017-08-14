@@ -4,6 +4,7 @@ import math
 from PIL import Image
 import scipy.io
 import random
+sys.path.append("..")
 from pyutils import datalayer_util as du
 
 def load_imagelabel_ac(voc_dir, idx, shape, mean_):
