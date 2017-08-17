@@ -4,6 +4,7 @@ import math
 from PIL import Image
 import scipy.io
 import random
+import sys
 sys.path.append("..")
 from pyutils import datalayer_util as du
 
@@ -39,7 +40,7 @@ def load_imagelabel_ac(voc_dir, idx, shape, mean_):
 	else:
 		top = 0
 
-	if top==0 or left==0
+	if top==0 or left==0:
 		im = im.resize((width_,height_),PIL.Image.BILINEAR)
 		lb = lb.resize((width_,height_),PIL.Image.BILINEAR)
 	else:

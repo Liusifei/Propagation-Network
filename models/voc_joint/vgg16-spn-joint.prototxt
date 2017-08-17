@@ -9,7 +9,7 @@ layer {
   python_param {
     module: "roisample_layer"
     layer: "ROISampleDataLayer"
-    param_str: "{\'root\': \'/home/sifeil/Data/VOC/pascal/VOCdevkit/VOC2012\', \'seed\': 1464, \'split\': \'train\', \'mean\': (104.00699, 116.66877, 122.67892), \'shape\': (10,3,321,321), \'roi_num_per_im\': 4, \'roi_dim\': 128}"
+    param_str: "{\'root\': \'/home/sifeil/Data/VOC/pascal/VOCdevkit/VOC2012\', \'seed\': 1464, \'split\': \'train\', \'mean\': (104.00699, 116.66877, 122.67892), \'shape\': (10,3,320,320), \'roi_num_per_im\': 4, \'roi_dim\': 128}"
   }
 }
 
@@ -31,39 +31,12 @@ layer {
 #           161;          81;          41;          21;  11
 # 
 
-name: "${NET_ID}_global"
-
-layer {
-  name: "data_global"
-  type: "ImageSegData"
-  top: "data"
-  top: "label"
-  top: "data_dim"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-    mirror: true
-    crop_size: 321
-    mean_value: 104.008
-    mean_value: 116.669
-    mean_value: 122.675
-  }
-  image_data_param {
-    root_folder: "${DATA_ROOT}"
-    source: "voc12/list/${TRAIN_SET}.txt"
-    batch_size: 10
-    shuffle: true
-    label_type: PIXEL
-  }
-}
-
 ###################### DeepLab ####################
 layer {
   name: "conv1_1_global"
   type: "Convolution"
-  bottom: "data"
-  top: "conv1_1"
+  bottom: "image"
+  top: "conv1_1_global"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -81,14 +54,14 @@ layer {
 layer {
   name: "relu1_1_global"
   type: "ReLU"
-  bottom: "conv1_1"
-  top: "conv1_1"
+  bottom: "conv1_1_global"
+  top: "conv1_1_global"
 }
 layer {
   name: "conv1_2_global"
   type: "Convolution"
-  bottom: "conv1_1"
-  top: "conv1_2"
+  bottom: "conv1_1_global"
+  top: "conv1_2_global"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -106,14 +79,14 @@ layer {
 layer {
   name: "relu1_2_global"
   type: "ReLU"
-  bottom: "conv1_2"
-  top: "conv1_2"
+  bottom: "conv1_2_global"
+  top: "conv1_2_global"
 }
 layer {
   name: "pool1_global"
   type: "Pooling"
-  bottom: "conv1_2"
-  top: "pool1"
+  bottom: "conv1_2_global"
+  top: "pool1_global"
   pooling_param {
     pool: MAX
     kernel_size: 3
@@ -124,8 +97,8 @@ layer {
 layer {
   name: "conv2_1_global"
   type: "Convolution"
-  bottom: "pool1"
-  top: "conv2_1"
+  bottom: "pool1_global"
+  top: "conv2_1_global"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -143,14 +116,14 @@ layer {
 layer {
   name: "relu2_1_global"
   type: "ReLU"
-  bottom: "conv2_1"
-  top: "conv2_1"
+  bottom: "conv2_1_global"
+  top: "conv2_1_global"
 }
 layer {
   name: "conv2_2_global"
   type: "Convolution"
-  bottom: "conv2_1"
-  top: "conv2_2"
+  bottom: "conv2_1_global"
+  top: "conv2_2_global"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -168,14 +141,14 @@ layer {
 layer {
   name: "relu2_2_global"
   type: "ReLU"
-  bottom: "conv2_2"
-  top: "conv2_2"
+  bottom: "conv2_2_global"
+  top: "conv2_2_global"
 }
 layer {
   name: "pool2_global"
   type: "Pooling"
-  bottom: "conv2_2"
-  top: "pool2"
+  bottom: "conv2_2_global"
+  top: "pool2_global"
   pooling_param {
     pool: MAX
     kernel_size: 3
@@ -186,8 +159,8 @@ layer {
 layer {
   name: "conv3_1_global"
   type: "Convolution"
-  bottom: "pool2"
-  top: "conv3_1"
+  bottom: "pool2_global"
+  top: "conv3_1_global"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -205,14 +178,14 @@ layer {
 layer {
   name: "relu3_1_global"
   type: "ReLU"
-  bottom: "conv3_1"
-  top: "conv3_1"
+  bottom: "conv3_1_global"
+  top: "conv3_1_global"
 }
 layer {
   name: "conv3_2_global"
   type: "Convolution"
-  bottom: "conv3_1"
-  top: "conv3_2"
+  bottom: "conv3_1_global"
+  top: "conv3_2_global"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -230,14 +203,14 @@ layer {
 layer {
   name: "relu3_2_global"
   type: "ReLU"
-  bottom: "conv3_2"
-  top: "conv3_2"
+  bottom: "conv3_2_global"
+  top: "conv3_2_global"
 }
 layer {
   name: "conv3_3_global"
   type: "Convolution"
-  bottom: "conv3_2"
-  top: "conv3_3"
+  bottom: "conv3_2_global"
+  top: "conv3_3_global"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -255,14 +228,14 @@ layer {
 layer {
   name: "relu3_3_global"
   type: "ReLU"
-  bottom: "conv3_3"
-  top: "conv3_3"
+  bottom: "conv3_3_global"
+  top: "conv3_3_global"
 }
 layer {
   name: "pool3_global"
   type: "Pooling"
-  bottom: "conv3_3"
-  top: "pool3"
+  bottom: "conv3_3_global"
+  top: "pool3_global"
   pooling_param {
     pool: MAX
     kernel_size: 3
@@ -273,8 +246,8 @@ layer {
 layer {
   name: "conv4_1_global"
   type: "Convolution"
-  bottom: "pool3"
-  top: "conv4_1"
+  bottom: "pool3_global"
+  top: "conv4_1_global"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -292,14 +265,14 @@ layer {
 layer {
   name: "relu4_1_global"
   type: "ReLU"
-  bottom: "conv4_1"
-  top: "conv4_1"
+  bottom: "conv4_1_global"
+  top: "conv4_1_global"
 }
 layer {
   name: "conv4_2_global"
   type: "Convolution"
-  bottom: "conv4_1"
-  top: "conv4_2"
+  bottom: "conv4_1_global"
+  top: "conv4_2_global"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -317,14 +290,14 @@ layer {
 layer {
   name: "relu4_2_global"
   type: "ReLU"
-  bottom: "conv4_2"
-  top: "conv4_2"
+  bottom: "conv4_2_global"
+  top: "conv4_2_global"
 }
 layer {
   name: "conv4_3_global"
   type: "Convolution"
-  bottom: "conv4_2"
-  top: "conv4_3"
+  bottom: "conv4_2_global"
+  top: "conv4_3_global"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -342,12 +315,12 @@ layer {
 layer {
   name: "relu4_3_global"
   type: "ReLU"
-  bottom: "conv4_3"
-  top: "conv4_3"
+  bottom: "conv4_3_global"
+  top: "conv4_3_global"
 }
 layer {
-  bottom: "conv4_3"
-  top: "pool4"
+  bottom: "conv4_3_global"
+  top: "pool4_global"
   name: "pool4_global"
   type: "Pooling"
   pooling_param {
@@ -360,8 +333,8 @@ layer {
 layer {
   name: "conv5_1_global"
   type: "Convolution"
-  bottom: "pool4"
-  top: "conv5_1"
+  bottom: "pool4_global"
+  top: "conv5_1_global"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -380,14 +353,14 @@ layer {
 layer {
   name: "relu5_1_global"
   type: "ReLU"
-  bottom: "conv5_1"
-  top: "conv5_1"
+  bottom: "conv5_1_global"
+  top: "conv5_1_global"
 }
 layer {
   name: "conv5_2_global"
   type: "Convolution"
-  bottom: "conv5_1"
-  top: "conv5_2"
+  bottom: "conv5_1_global"
+  top: "conv5_2_global"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -406,14 +379,14 @@ layer {
 layer {
   name: "relu5_2_global"
   type: "ReLU"
-  bottom: "conv5_2"
-  top: "conv5_2"
+  bottom: "conv5_2_global"
+  top: "conv5_2_global"
 }
 layer {
   name: "conv5_3_global"
   type: "Convolution"
-  bottom: "conv5_2"
-  top: "conv5_3"
+  bottom: "conv5_2_global"
+  top: "conv5_3_global"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -432,13 +405,13 @@ layer {
 layer {
   name: "relu5_3_global"
   type: "ReLU"
-  bottom: "conv5_3"
-  top: "conv5_3"
+  bottom: "conv5_3_global"
+  top: "conv5_3_global"
 }
 
 layer {
-  bottom: "conv5_3"
-  top: "pool5"
+  bottom: "conv5_3_global"
+  top: "pool5_global"
   name: "pool5_global"
   type: "Pooling"
   pooling_param {
@@ -453,7 +426,7 @@ layer {
 layer {
   name: "fc6_1_global"
   type: "Convolution"
-  bottom: "pool5"
+  bottom: "pool5_global"
   top: "fc6_1"
   param {
     lr_mult: 1
@@ -549,7 +522,7 @@ layer {
 layer {
   name: "fc6_2_global"
   type: "Convolution"
-  bottom: "pool5"
+  bottom: "pool5_global"
   top: "fc6_2"
   param {
     lr_mult: 1
@@ -645,7 +618,7 @@ layer {
 layer {
   name: "fc6_3_global"
   type: "Convolution"
-  bottom: "pool5"
+  bottom: "pool5_global"
   top: "fc6_3"
   param {
     lr_mult: 1
@@ -741,7 +714,7 @@ layer {
 layer {
   name: "fc6_4_global"
   type: "Convolution"
-  bottom: "pool5"
+  bottom: "pool5_global"
   top: "fc6_4"
   param {
     lr_mult: 1
@@ -1464,10 +1437,6 @@ layer {
 		lr_mult: 0 
 		decay_mult: 0 
 	}
-	param { 
-		lr_mult: 0 
-		decay_mult: 0 
-	}
 }
 
 layer {
@@ -1531,10 +1500,6 @@ layer {
 	    } 
 	    bias_term: false
     }
-	param { 
-		lr_mult: 0 
-		decay_mult: 0 
-	}
 	param { 
 		lr_mult: 0 
 		decay_mult: 0 
@@ -1607,10 +1572,6 @@ layer {
 		lr_mult: 0 
 		decay_mult: 0 
 	}
-	param { 
-		lr_mult: 0 
-		decay_mult: 0 
-	}
 }
 
 layer {
@@ -1675,10 +1636,6 @@ layer {
 	    } 
 	    bias_term: false
     }
-	param { 
-		lr_mult: 0 
-		decay_mult: 0 
-	}
 	param { 
 		lr_mult: 0 
 		decay_mult: 0 
@@ -2185,10 +2142,6 @@ layer {
 	    } 
 	    bias_term: false
     }
-	param { 
-		lr_mult: 0 
-		decay_mult: 0 
-	}
 	param { 
 		lr_mult: 0 
 		decay_mult: 0 

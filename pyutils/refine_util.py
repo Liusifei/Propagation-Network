@@ -4,7 +4,7 @@ import scipy.io
 import math
 import os
 from PIL import Image
-import vocaugcropsoft_layer as VL
+# import vocaugcropsoft_layer as VL
 
 def imresize4array(imarray, width, height):
 	if imarray.ndim == 2:

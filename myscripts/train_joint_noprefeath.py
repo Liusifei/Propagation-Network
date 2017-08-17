@@ -6,26 +6,30 @@ import os
 import sys
 from PIL import Image
 sys.path.append("..")
-from pyutil import refine_util as rv
-from pyutil import surgery as sg
+sys.path.append("../pylayers")
+from pyutils import refine_util as rv
+from pyutils import surgery as sg
 
 def init_train():
 	caffe.set_mode_gpu()
 	caffe.set_device(0)
 	solverproto = '../models/voc_joint/solver_v{}.prototxt'.format(sys.argv[1])
 	Sov = rv.parse_solverproto(solverproto)
+	if not os.path.exists('../states'):
+		os.makedirs('../states')
+	save_path = '../states/joint_v{}/'.format(sys.argv[1])	
+	if not os.path.exists(save_path):
+		os.makedirs(save_path)	
 	solver = caffe.SGDSolver(solverproto)
 	solver.set_iter(0)
-	train_.max_iter = 20001;
-	train_.save_iter = 100;
-	train_.display_iter = 10
+	max_iter = 20001;
+	save_iter = 100;
+	display_iter = 10
 	# train_.train_loss = 0
-	train_.tmpname = save_path + 'loss' + '.mat'
-	train_.cur_res_mat = save_path+'infer_res.mat'
-	train_.cur_iter = save_path+'iter.mat'
-	train_.save_path = '../states/joint_v{}/'.format(sys.argv[1])
-	if not os.path.exists(save_path):
-		os.makedirs(save_path)
+	tmpname = save_path + 'loss' + '.mat'
+	cur_res_mat = save_path+'infer_res.mat'
+	cur_iter = save_path+'iter.mat'
+	train_ = {'save_path':save_path, 'max_iter':max_iter, 'save_iter':save_iter, 'display_iter':display_iter, 'tmpname':tmpname, 'cur_res_mat':cur_res_mat, 'cur_iter':cur_iter}
 	return solver, Sov, train_
 
 if __name__ == "__main__":

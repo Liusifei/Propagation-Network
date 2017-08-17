@@ -41,7 +41,7 @@ class ROISampleDataLayer(caffe.Layer):
 			raise Exception("Do not define a bottom.")
 
 		# load indices for images and labels
-		split_f  = '{}/ImageSets/Segmentation/{}.txt'.format(self.voc_dir,
+		split_f  = '{}/ImageSets/Segmentation/{}.txt'.format(self.root_dir,
 				self.split)
 		self.indices = open(split_f, 'r').read().splitlines()
 		self.idx = np.array(range(self.shape[0]))
@@ -59,7 +59,7 @@ class ROISampleDataLayer(caffe.Layer):
 		# reshape tops to fit (leading 1 is for batch dimension)
 		top[0].reshape(*self.data.shape)
 		top[1].reshape(*self.label.shape)
-		top[2].reshape(*self.rois)
+		top[2].reshape(*self.rois.shape)
 
 	def get_next_minibatch_idx(self):
 		for id in self.shape[0]:
@@ -78,10 +78,10 @@ class ROISampleDataLayer(caffe.Layer):
 	
 	def forward(self, bottom, top):
 		get_next_minibatch()
-        top[0].data[...] = self.data
-        top[1].data[...] = self.label
-        top[2].data[...] = self.rois
+		top[0].data[...] = self.data
+		top[1].data[...] = self.label
+		top[2].data[...] = self.rois
 
-    
-    def backward(self, top, propagate_down, bottom):
-        pass
+	
+	def backward(self, top, propagate_down, bottom):
+		pass
