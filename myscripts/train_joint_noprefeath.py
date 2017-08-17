@@ -7,14 +7,15 @@ import sys
 from PIL import Image
 sys.path.append("..")
 from pyutil import refine_util as rv
+from pyutil import surgery as sg
 
 def init_train():
 	caffe.set_mode_gpu()
 	caffe.set_device(0)
 	solverproto = '../models/voc_joint/solver_v{}.prototxt'.format(sys.argv[1])
+	Sov = rv.parse_solverproto(solverproto)
 	solver = caffe.SGDSolver(solverproto)
 	solver.set_iter(0)
-	Sov = rv.parse_solverproto(solverproto)
 	train_.max_iter = 20001;
 	train_.save_iter = 100;
 	train_.display_iter = 10

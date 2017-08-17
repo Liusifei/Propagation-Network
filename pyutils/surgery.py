@@ -30,6 +30,24 @@ def transplant(new_net, net, suffix=''):
                 print 'copying', p, ' -> ', p_new, i
             new_net.params[p_new][i].data.flat = net.params[p][i].data.flat
 
+
+def proto_addfix(proto_path, proto_path_new, suffix=''):
+    """
+    need to check whether the new file is there, if no, run this function.
+    """
+    lines = open(proto_path,'r').read().splitlines()
+    f_ = open(proto_path_new, 'w')
+    for l in lines:
+        if 'name:' in l:
+            parts_ = l.rpartition('"')
+            new_l = '{}_{}"'.format(parts_[0], suffix)
+            f_.write(new_l)
+        else:
+            f_.write(l)
+        f_.write('\n')
+    f_.close()
+
+
 def upsample_filt(size):
     """
     Make a 2D bilinear kernel suitable for upsampling of the given (h, w) size.

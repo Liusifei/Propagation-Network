@@ -8,10 +8,14 @@ sys.path.append("..")
 from pyutils import datalayer_util as du
 
 def load_imagelabel_ac(voc_dir, idx, shape, mean_):
-	width_ = np.array(1.2*shape[3],dtype=int)
-	height_ = np.array(1.2*shape[2],dtype=int)
+	width_ = np.array(shape[3],dtype=int)
+	height_ = np.array(shape[2],dtype=int)
+
+	# read
 	im = Image.open('{}/JPEGImages/{}.jpg'.format(voc_dir, idx))
 	lb = Image.open('{}/SegmentationClass/{}.png'.format(voc_dir, idx))
+
+	# augmentation
 	(x,y) = im.size
 	center = (x/2,y/2)
 	rate = (np.random.rand(1)-0.5)
@@ -24,15 +28,33 @@ def load_imagelabel_ac(voc_dir, idx, shape, mean_):
 	mat = du.Affinemat(angle,scale_x,scale_y,center,(center[0]+shift_x,center[1]+shift_y))
 	im = im.transform((x,y), Image.AFFINE, mat, resample=Image.BILINEAR)
 	lb = lb.transform((x,y), Image.AFFINE, mat, resample=Image.BILINEAR)
+
+	# crop to 321*321
+	if x > width_:
+		left = int(np.random.rand(1) * (x-width_))
+	else:
+		left = 0
+	if y > height_:
+		top = int(np.random.rand(1) * (y-height_))
+	else:
+		top = 0
+
+	if top==0 or left==0
+		im = im.resize((width_,height_),PIL.Image.BILINEAR)
+		lb = lb.resize((width_,height_),PIL.Image.BILINEAR)
+	else:
+		im = im.crop((left, top, left+width_, top+height_))
+		lb = lb.crop((left, top, left+width_, top+height_))
+
+	# transfer
 	image = np.array(im,dtype=np.float32)
 	image = image[:,:,::-1]
 	image -= mean_
 	label = np.array(lb,dtype=np.uint8)
 	label = label[:,:,np.newaxis]
+	image = image.transpose((2,0,1))
+	label = label.transpose((2,0,1))
 
-    image = image.transpose((2,0,1))
-    label = label.transpose((2,0,1))
-	  
 	return image, label
 
 

@@ -35,8 +35,6 @@ class ROISampleDataLayer(caffe.Layer):
 		self.roi_num = params['roi_num_per_im']
 		self.roi_dim = params['roi_dim']
 
-		self.sample_size = self.shape[0] / self.roi_num
-
 		if len(top) != 3:
 			raise Exception("Need to define three tops: data, label and rois.")
 		if len(bottom) != 0:
@@ -46,7 +44,7 @@ class ROISampleDataLayer(caffe.Layer):
 		split_f  = '{}/ImageSets/Segmentation/{}.txt'.format(self.voc_dir,
 				self.split)
 		self.indices = open(split_f, 'r').read().splitlines()
-		self.idx = np.array(range(self.sample_size))
+		self.idx = np.array(range(self.shape[0]))
 
 		random.seed(self.seed)
 		for id in range(len(self.idx)):
@@ -64,18 +62,18 @@ class ROISampleDataLayer(caffe.Layer):
 		top[2].reshape(*self.rois)
 
 	def get_next_minibatch_idx(self):
-		for id in self.sample_size:
+		for id in self.shape[0]:
 			idx[id] = random.randint(0, len(self.indices)-1)
 		return idx
 
 	def get_next_minibatch(self):
 		"""return everything"""
 		idx_ = get_next_minibatch_idx()
-		for id in self.sample_size:
+		for id in self.shape[0]:
 			image[id], label[id]= \
 				db_roi.load_imagelabel_ac(self.indices[idx_[id]],self.shape)
 			rois[id*self.roi_num : (id+1)*self.roi_num] = \
-				db_roi.getrois(label, self.roi_num, self.roi_dim)
+				db_roi.getrois(id, label, self.roi_num, self.roi_dim)
 
 	
 	def forward(self, bottom, top):
