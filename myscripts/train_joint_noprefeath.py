@@ -31,10 +31,17 @@ def init_train():
 if __name__ == "__main__":
 	solver_, Sov_, train_ = init_train()
 	if not os.path.exists(train_.cur_iter):
+		# apply global model (VGG-16)
 		weights_global = '../models/pretrain/train_iter_20000.caffemodel'
+		proto_global = '../models/voc_joint/deeplabv2-vgg16-deploy.prototxt'
+		net_old = caffe.Net(proto_global, weights_global, caffe.TRAIN)
+		sg.transplant(solver.net, net_old, '_global')
+
+		# apply SPN model (VGG-convs)
 		weights_guide = '../models/pretrain/vgg_scratch_c7_iter_60000.caffemodel'
-		solver.net.copy_from(weights_global)
 		solver.net.copy_from(weights_guide)
+
+		# loss zeros
 		train_loss = np.zeros(int(math.ceil(max_iter/ display_iter)))
 	else:
 		curiter = scipy.io.loadmat(train_.cur_iter)
