@@ -1,0 +1,14 @@
+train_net: "../models/voc_joint/vgg16-spn-joint.prototxt"
+test_iter: 33
+test_interval: 5000000
+base_lr: 0.0001
+momentum: 0.9
+weight_decay: 0.0005
+clip_gradients: 1000
+lr_policy: "poly"
+power: 0.9
+display: 10
+max_iter: 20001
+snapshot: 100
+snapshot_prefix: "../states/joint_v1/state"
+solver_mode: GPU
