@@ -33,7 +33,11 @@ class ROISampleDataLayer(caffe.Layer):
 		self.shape = np.array(params['shape'])
 		self.imagenorm = params.get('norm', False)
 		self.roi_num = params['roi_num_per_im']
-		self.roi_dim = params['roi_dim']
+		roi_dim = params['roi_dim']
+		if isinstance(roi_dim, int):
+			self.roi_dim = (roi_dim,roi_dim)
+		else:
+			self.roi_dim = roi_dim
 
 		if len(top) != 3:
 			raise Exception("Need to define three tops: data, label and rois.")
@@ -54,7 +58,7 @@ class ROISampleDataLayer(caffe.Layer):
 	def reshape(self, bottom, top):
 		self.data = np.zeros(self.shape)
 		self.label = np.zeros((self.shape[0],1,self.shape[2],self.shape[3]))
-		self.rois = np.zeros((self.roi_num,5))
+		self.rois = np.zeros((self.roi_num * self.shape[0], 5))
 
 		# reshape tops to fit (leading 1 is for batch dimension)
 		top[0].reshape(*self.data.shape)
@@ -62,22 +66,23 @@ class ROISampleDataLayer(caffe.Layer):
 		top[2].reshape(*self.rois.shape)
 
 	def get_next_minibatch_idx(self):
-		for id in self.shape[0]:
-			idx[id] = random.randint(0, len(self.indices)-1)
-		return idx
+		for id in range(len(self.idx)):
+			self.idx[id] = random.randint(0, len(self.indices)-1)
 
 	def get_next_minibatch(self):
 		"""return everything"""
-		idx_ = get_next_minibatch_idx()
-		for id in self.shape[0]:
-			image[id], label[id]= \
-				db_roi.load_imagelabel_ac(self.indices[idx_[id]],self.shape)
-			rois[id*self.roi_num : (id+1)*self.roi_num] = \
-				db_roi.getrois(id, label, self.roi_num, self.roi_dim)
+		self.get_next_minibatch_idx()
+		for id in range(len(self.idx)):
+			self.data[id], self.label[id]= \
+				db_roi.load_imagelabel_ac(self.root_dir, self.indices[self.idx[id]], self.shape, self.mean)
+			# print id, self.label[id].shape, self.roi_num, self.roi_dim
+			self.rois[id*self.roi_num : (id+1)*self.roi_num] = \
+				db_roi.getrois(id, self.label[id], self.roi_num, self.roi_dim)
+			# print self.rois[id*self.roi_num : (id+1)*self.roi_num]
 
 	
 	def forward(self, bottom, top):
-		get_next_minibatch()
+		self.get_next_minibatch()
 		top[0].data[...] = self.data
 		top[1].data[...] = self.label
 		top[2].data[...] = self.rois

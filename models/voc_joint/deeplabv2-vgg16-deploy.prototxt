@@ -533,14 +533,36 @@ layer {
     operation: SUM
   }
 }
-## original resolution
+# ## original resolution
+# layer {
+#   name: "fc8_interp"
+#   type: "Interp"
+#   bottom: "fc8_voc12"
+#   top: "fc8_interp"
+#   interp_param {
+#     zoom_factor: 8
+#   }
+# }
+
 layer {
   name: "fc8_interp"
-  type: "Interp"
+  type: "Deconvolution"
   bottom: "fc8_voc12"
   top: "fc8_interp"
-  interp_param {
-    zoom_factor: 8
+  convolution_param {
+      kernel_size: 16
+      stride: 8
+      num_output: 21
+      group: 21
+      pad: 8
+      weight_filler: { 
+        type: "bilinear" 
+      } 
+      bias_term: false
+    }
+  param { 
+    lr_mult: 0 
+    decay_mult: 0 
   }
 }
 

@@ -9,7 +9,7 @@ layer {
   python_param {
     module: "roisample_layer"
     layer: "ROISampleDataLayer"
-    param_str: "{\'root\': \'/home/sifeil/Data/VOC/pascal/VOCdevkit/VOC2012\', \'seed\': 1464, \'split\': \'train\', \'mean\': (104.00699, 116.66877, 122.67892), \'shape\': (10,3,320,320), \'roi_num_per_im\': 4, \'roi_dim\': 128}"
+    param_str: "{\'root\': \'/home/sifeil/Data/VOC/pascal/VOCdevkit/VOC2012\', \'seed\': 1464, \'split\': \'train\', \'mean\': (104.00699, 116.66877, 122.67892), \'shape\': (4,3,320,320), \'roi_num_per_im\': 4, \'roi_dim\': 128}"
   }
 }
 
@@ -850,12 +850,12 @@ layer {
   type: "SoftmaxWithLoss"
   bottom: "fc8_interp"
   bottom: "label"
-  include {
-    phase: TRAIN
-  }
+  top: "loss_global"
   loss_param {
     ignore_label: 255
+    normalize: false
   }
+  loss_weight: 0.000001
 }
 
 
@@ -1418,7 +1418,7 @@ layer {
 }
 
 layer {
-	name: "edge_resize6"
+	name: "edge_resize6_deconv"
 	type: "Deconvolution"
 	bottom: "edge_conv5"
 	top: "edge_resize6"
@@ -1485,7 +1485,7 @@ layer {
 
 
 layer {
-	name: "edge_resize7"
+	name: "edge_resize7_deconv"
 	type: "Deconvolution"
 	bottom: "concat6"
 	top: "edge_resize7"
@@ -1553,7 +1553,7 @@ layer {
 }
 
 layer {
-	name: "edge_resize8"
+	name: "edge_resize8_deconv"
 	type: "Deconvolution"
 	bottom: "concat7"
 	top: "edge_resize8"
@@ -1621,7 +1621,7 @@ layer {
 }
 
 layer {
-	name: "edge_resize9"
+	name: "edge_resize9_deconv"
 	type: "Deconvolution"
 	bottom: "concat8"
 	top: "edge_resize9"
@@ -2127,7 +2127,7 @@ layer{
 }
 
 layer {
-	name: "elt_resize"
+	name: "elt_resize_deconv"
 	type: "Deconvolution"
 	bottom: "eltwisemax_gate2"
 	top: "elt_resize"
@@ -2207,7 +2207,6 @@ layer {
     kernel_size: 3
     weight_filler {      type: "xavier"       }
     bias_filler {      type: "constant"      value: 0    }} 
-    #loss_weight: 1
 }
 layer {
   name: "loss"
@@ -2219,6 +2218,7 @@ layer {
     ignore_label: 255
     normalize: false
   }
+  loss_weight:0.0
 }
 
 # layer {

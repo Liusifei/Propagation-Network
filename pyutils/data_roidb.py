@@ -41,8 +41,8 @@ def load_imagelabel_ac(voc_dir, idx, shape, mean_):
 		top = 0
 
 	if top==0 or left==0:
-		im = im.resize((width_,height_),PIL.Image.BILINEAR)
-		lb = lb.resize((width_,height_),PIL.Image.BILINEAR)
+		im = im.resize((width_,height_), Image.BILINEAR)
+		lb = lb.resize((width_,height_), Image.BILINEAR)
 	else:
 		im = im.crop((left, top, left+width_, top+height_))
 		lb = lb.crop((left, top, left+width_, top+height_))
@@ -56,6 +56,8 @@ def load_imagelabel_ac(voc_dir, idx, shape, mean_):
 	image = image.transpose((2,0,1))
 	label = label.transpose((2,0,1))
 
+	scipy.io.savemat('debug_imcrop.mat',dict(image=image,label=label))
+
 	return image, label
 
 
@@ -63,7 +65,8 @@ def getrois(id_, label, roi_num, roi_dim):
 	# image: h*w*k
 	# images: h*w*k*n
 	# sample according to the pretrained model
-	im_shape = np.array(label.shape)
+	# !!! first index of roi begins from 1, see line 87
+	im_shape = np.array(label[0].shape)
 	count = 0
 	protect = 0
 	rois = np.zeros((roi_num,5))
@@ -81,6 +84,7 @@ def getrois(id_, label, roi_num, roi_dim):
 			protect += 1
 			continue
 		protect = 0
-		rois[count] = np.array((id_, left,top,roi_dim[0],roi_dim[1]))
+		rois[count] = np.array((id_+1, left, top, roi_dim[0],roi_dim[1]))
 		count += 1
+
 	return rois

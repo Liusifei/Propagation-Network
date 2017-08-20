@@ -44,7 +44,6 @@ def proto_addfix(proto_path, proto_path_new, suffix=''):
             f_.write(new_l)
         else:
             f_.write(l)
-        f_.write('\n')
     f_.close()
 
 

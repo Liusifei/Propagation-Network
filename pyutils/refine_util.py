@@ -16,11 +16,49 @@ def imresize4array(imarray, width, height):
 	im = np.array(im, dtype=np.float32)
 	return im
 
-def getbatch(net):
-	batch = net.blobs['data'].data[...]
-	active = net.blobs['deconv0'].data[...]
+# important checkpoints
+def get_global(net):
+	batch = net.blobs['image'].data[...]
+	global_prob = net.blobs['prob'].data[...]
 	label = net.blobs['label'].data[...]
-	return (batch, label, active)
+	return (batch, label, global_prob)
+
+
+def get_spn(net):
+	batch_rois = net.blobs['rgb'].data[...]
+	label_rois = net.blobs['labels'].data[...]
+	msk_rois = net.blobs['msk'].data[...]
+	spn_active = net.blobs['deconv0'].data[...]
+	return (batch_rois, label_rois, msk_rois, spn_active)
+
+def get_spn_diff(net):
+	batch_diff = net.blobs['conv1_1'].diff[...]
+	prob_diff = net.blobs['prob'].diff[...]
+	msk_diff = net.blobs['msk'].diff[...]
+	spn_diff = net.blobs['fc8_interp'].diff[...]
+	return (batch_diff, prob_diff, msk_diff, spn_diff)
+
+# more general
+def get_alldata(net):
+	data_all = {}
+	for a in net.blobs:
+		data_all[a] = net.blobs[a].data[...]
+	return data_all
+
+def get_alldiff(net):
+	diff_all = {}
+	for a in net.blobs:
+		diff_all[a] = net.blobs[a].diff[...]
+	return diff_all
+
+def get_all_weights(net):
+	weights_all = {}
+	for p in net.params:
+		weights_ = {}
+		for i in range(len(net.params[p])):
+			weights_[i] = net.params[p][i].data[...]
+		weights_all[p] = weights_
+	return weights_all
 
 def clear_history(snapshot,snapshot_prefix,iter):
 	if iter > 2*snapshot and (iter-snapshot)%10000!=0:

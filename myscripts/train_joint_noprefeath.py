@@ -23,18 +23,19 @@ def init_train():
 	solver = caffe.SGDSolver(solverproto)
 	solver.set_iter(0)
 	max_iter = 20001;
-	save_iter = 100;
+	save_iter = 10;
 	display_iter = 10
 	# train_.train_loss = 0
 	tmpname = save_path + 'loss' + '.mat'
-	cur_res_mat = save_path+'infer_res.mat'
+	cur_res_g = save_path+'infer_res_g.mat'
+	cur_res_s = save_path+'infer_res_s.mat'
 	cur_iter = save_path+'iter.mat'
-	train_ = {'save_path':save_path, 'max_iter':max_iter, 'save_iter':save_iter, 'display_iter':display_iter, 'tmpname':tmpname, 'cur_res_mat':cur_res_mat, 'cur_iter':cur_iter}
+	train_ = {'save_path':save_path, 'max_iter':max_iter, 'save_iter':save_iter, 'display_iter':display_iter, 'tmpname':tmpname, 'cur_res_g':cur_res_g, 'cur_res_s':cur_res_s, 'cur_iter':cur_iter}
 	return solver, Sov, train_
 
 if __name__ == "__main__":
-	solver_, Sov_, train_ = init_train()
-	if not os.path.exists(train_.cur_iter):
+	solver, Sov, train_ = init_train()
+	if not os.path.exists(train_['cur_iter']):
 		# apply global model (VGG-16)
 		weights_global = '../models/pretrain/train_iter_20000.caffemodel'
 		proto_global = '../models/voc_joint/deeplabv2-vgg16-deploy.prototxt'
@@ -46,13 +47,14 @@ if __name__ == "__main__":
 		solver.net.copy_from(weights_guide)
 
 		# loss zeros
-		train_loss = np.zeros(int(math.ceil(max_iter/ display_iter)))
+		train_loss_g = np.zeros(int(math.ceil(train_['max_iter']/ train_['display_iter'])))
+		train_loss_s = np.zeros(int(math.ceil(train_['max_iter']/ train_['display_iter'])))
 	else:
-		curiter = scipy.io.loadmat(train_.cur_iter)
+		curiter = scipy.io.loadmat(train_['cur_iter'])
 		curiter = curiter['cur_iter']
 		curiter = int(curiter)
 		solver.set_iter(curiter)
-		train_loss = scipy.io.loadmat(train_.tmpname)
+		train_loss = scipy.io.loadmat(train_['tmpname'])
 		train_loss = np.array(train_loss['train_loss'], dtype=np.float32).squeeze()
 		solverstate = Sov['snapshot_prefix'] + \
 					'_iter_{}.solverstate'.format(solver.iter)
@@ -66,18 +68,35 @@ if __name__ == "__main__":
 			raise Exception("Model does not exist.")		
 
 	begin = solver.iter
-	_train_loss = 0
+	_train_loss_g = 0
+	_train_loss_s = 0
 
-	for iter in range(begin, max_iter):
+	for iter in range(begin, train_['max_iter']):
+
 		solver.step(1)
-		_train_loss += solver.net.blobs['loss'].data
-		if iter % display_iter == 0:
-			train_loss[int(iter / display_iter)] = _train_loss / display_iter
-			_train_loss = 0
-		if iter % save_iter == 0:
-			batch, label, active = rv.getbatch(solver.net)
-			scipy.io.savemat(cur_res_mat, dict(batch = batch, label = label, active = active))
-			scipy.io.savemat(train_.cur_iter, dict(cur_iter = iter))	
-			scipy.io.savemat(train_.tmpname, dict(train_loss = train_loss))
+		_train_loss_g += solver.net.blobs['loss_global'].data
+		_train_loss_s += solver.net.blobs['loss'].data
+
+		if iter % train_['display_iter'] == 0:
+			train_loss_g[int(iter / train_['display_iter'])] = _train_loss_g / train_['display_iter']
+			train_loss_s[int(iter / train_['display_iter'])] = _train_loss_s / train_['display_iter']
+			_train_loss_g = 0
+			_train_loss_s = 0
+
+		if iter % train_['save_iter'] == 0:
+
+			batch, label, global_prob = rv.get_global(solver.net)
+			scipy.io.savemat(train_['cur_res_g'], dict(batch = batch, label = label, global_prob = global_prob))
+
+			batch_rois, label_rois, msk_rois, spn_active = rv.get_spn(solver.net)
+			scipy.io.savemat(train_['cur_res_s'], dict(batch_rois = batch_rois, label_rois = label_rois, msk_rois = msk_rois, spn_active = spn_active))
+
+			# DEBUG
+			batch_diff, prob_diff, msk_diff, spn_diff = rv.get_spn_diff(solver.net)
+			scipy.io.savemat('../states/joint_v1/debug_diff.mat', dict(batch_diff = batch_diff, prob_diff = prob_diff, msk_diff = msk_diff, spn_diff = spn_diff))
+
+			scipy.io.savemat(train_['cur_iter'], dict(cur_iter = iter))	
+			scipy.io.savemat(train_['tmpname'], dict(train_loss_g = train_loss_g, train_loss_s = train_loss_s))
+
 		if (iter-1) % Sov['snapshot'] == 0:
 			rv.clear_history(Sov['snapshot'],Sov['snapshot_prefix'],iter-1)
