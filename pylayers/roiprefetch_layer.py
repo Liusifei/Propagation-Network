@@ -50,16 +50,6 @@ class ROIsamplePrefatchLayer(caffe.Layer):
 		random.seed(self.seed)
 		for id in range(len(self.idx)):
 			self.idx[id] = random.randint(0, len(self.indices)-1)
-
-
-	def set_db(self):
-		params = eval(self.param_str)
-		self.USE_PREFETCH = params.get('USE_PREFETCH',False)
-		self.root_dir = params['root']
-		self.split = params['split']
-		split_f  = '{}/ImageSets/Segmentation/{}.txt'.format(self.voc_dir,
-				self.split)
-		self.indices = open(split_f, 'r').read().splitlines()
 		if USE_PREFETCH:
 			self._blob_queue = Queue(10)
 			self._prefetch_process = Fetcher(self._blob_queue,
@@ -72,12 +62,40 @@ class ROIsamplePrefatchLayer(caffe.Layer):
 											self.seed,
 											self.idx)
 			self._prefetch_process.start()
-            def cleanup():
-                print 'Terminating BlobFetcher'
-                self._prefetch_process.terminate()
-                self._prefetch_process.join()
-            import atexit
-            atexit.register(cleanup)
+			def cleanup():
+				print 'Terminating BlobFetcher'
+				self._prefetch_process.terminate()
+				self._prefetch_process.join()
+			import atexit
+			atexit.register(cleanup)
+
+
+	# def set_db(self):
+	# 	params = eval(self.param_str)
+	# 	self.USE_PREFETCH = params.get('USE_PREFETCH',False)
+	# 	self.root_dir = params['root']
+	# 	self.split = params['split']
+	# 	split_f  = '{}/ImageSets/Segmentation/{}.txt'.format(self.voc_dir,
+	# 			self.split)
+	# 	self.indices = open(split_f, 'r').read().splitlines()
+	# 	if USE_PREFETCH:
+	# 		self._blob_queue = Queue(10)
+	# 		self._prefetch_process = Fetcher(self._blob_queue,
+	# 										self.root_dir,
+	# 										self.indices,
+	# 										self.shape,
+	# 										self.mean,
+	# 										self.roi_num,
+	# 										self.roi_dim,
+	# 										self.seed,
+	# 										self.idx)
+	# 		self._prefetch_process.start()
+ #            def cleanup():
+ #                print 'Terminating BlobFetcher'
+ #                self._prefetch_process.terminate()
+ #                self._prefetch_process.join()
+ #            import atexit
+ #            atexit.register(cleanup)
 
 
 	def reshape(self, bottom, top):
@@ -121,13 +139,13 @@ class ROIsamplePrefatchLayer(caffe.Layer):
 		top[1].reshape(*label_.shape)
 		top[2].reshape(*rois_.shape)
 
-        top[0].data[...] = data_
-        top[1].data[...] = label_
-        top[2].data[...] = rois_
+		top[0].data[...] = data_
+		top[1].data[...] = label_
+		top[2].data[...] = rois_
 
-    
-    def backward(self, top, propagate_down, bottom):
-        pass
+	
+	def backward(self, top, propagate_down, bottom):
+		pass
 
 
 
@@ -153,8 +171,8 @@ class Fetcher(Process):
 		return idx
 
 	def run(self):
-        print 'Fetcher started'
-        while True:
+		print 'Fetcher started'
+		while True:
 			_idx = get_next_minibatch_idx()
 			for id in range(self.shape[0]):
 				image, label= \
