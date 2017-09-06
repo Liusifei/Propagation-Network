@@ -70,6 +70,7 @@ class ROIsamplePrefatchLayer(caffe.Layer):
 			atexit.register(cleanup)
 
 
+# should i keep this function to split the init and runing
 	# def set_db(self):
 	# 	params = eval(self.param_str)
 	# 	self.USE_PREFETCH = params.get('USE_PREFETCH',False)

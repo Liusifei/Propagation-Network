@@ -16,6 +16,14 @@ def imresize4array(imarray, width, height):
 	im = np.array(im, dtype=np.float32)
 	return im
 
+
+def getbatch(net):
+	batch = net.blobs['data'].data[...]
+	active = net.blobs['deconv0'].data[...]
+	label = net.blobs['label'].data[...]
+	return (batch, label, active)
+
+
 # important checkpoints
 def get_global(net):
 	batch = net.blobs['image'].data[...]
