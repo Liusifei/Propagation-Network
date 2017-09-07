@@ -1,0 +1,17 @@
+train_net: "../models/voc_joint/voc_rnn_vgg_v3.prototxt"
+test_net: "../models/voc_joint/voc_rnn_deploy_vgg_v3.prototxt"
+test_iter: 33
+test_interval: 5000000
+base_lr: 0.0001
+momentum: 0.9
+weight_decay: 0.005
+clip_gradients: 1000
+lr_policy: "poly"
+power: 0.5
+display: 10
+max_iter: 60001
+snapshot: 100
+snapshot_prefix: "../states/joint_v2/state"
+solver_mode: GPU
+test_initialization:false
+device_id: 1
